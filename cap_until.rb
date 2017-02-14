@@ -39,9 +39,6 @@ scan_delay = 1
 )
 Process.detach @tcpdump
 
-sleep 1 #wait for tcpdump to start
-log "Started packet capture with pid #{@tcpdump}"
-
 def quit_all retval=0, exception=nil
   begin
     Process.kill "SIGKILL", @tcpdump
@@ -63,6 +60,10 @@ def delayed_exit delay=300
   quit_all
 end
 
+sleep 1 #wait for tcpdump to start
+log "Started packet capture with pid #{@tcpdump}"
+
+
 begin
   File.open(options[:watch_file]) do |file|
     file.seek(0,IO::SEEK_END)
@@ -75,6 +76,10 @@ begin
       if line =~ options[:watch_regex]
         log "Matched line: #{line}"
         checking = false
+      end
+      if !(Process.kill(0, @tcpdump) rescue false)
+        log "Lost tcpdump process"
+        exit 1
       end
     end
   end
