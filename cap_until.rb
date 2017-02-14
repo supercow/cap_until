@@ -33,9 +33,10 @@ end
 
 scan_delay = 1
 
-@tcpdump = fork do
-  system('tcpdump', '-i', options[:interface], '-w', "#{options[:prefix]}%m%d%H%M.pcap", '-G', "#{options[:rotate]}", options[:filter])
-end
+@tcpdump = Process.spawn(
+  'tcpdump' , '-i', options[:interface], '-w', "#{options[:prefix]}%m%d%H%M.pcap", '-G', "#{options[:rotate]}", options[:filter]
+)
+Process.detach @tcpdump
 
 sleep 1 #wait for tcpdump to start
 log "Started packet capture with pid #{@tcpdump}"
@@ -46,7 +47,7 @@ end
 
 def quit_all exception=nil
   at_exit {}
-  Process.kill "SIGKILL", @tcpdump + 1
+  Process.kill "SIGKILL", @tcpdump
   raise exception if exception != nil
   exit 0
 end
