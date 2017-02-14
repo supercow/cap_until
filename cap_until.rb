@@ -62,6 +62,7 @@ begin
   File.open(options[:watch_file]) do |file|
     file.seek(0,IO::SEEK_END)
     checking = true
+    log "Watching file #{options[:watch_file]} for #{options[:watch_regex].inspect}"
     while checking do
       sleep scan_delay
       select([file])
