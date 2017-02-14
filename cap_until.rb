@@ -12,7 +12,7 @@ end
 options = {}
 options[:interface] = 'eth0'
 options[:prefix] = 'console_traffic_'
-options[:rotate] = '300'
+options[:rotate] = 120
 options[:count] = 4
 options[:filter] = 'tcp port 4432 or tcp port 4430 or tcp port 8081'
 options[:watch_file] = "/var/log/puppetlabs/nginx/access.log"
