@@ -15,7 +15,7 @@ options[:prefix] = 'console_traffic_'
 options[:rotate] = '300'
 options[:count] = 4
 options[:filter] = 'tcp port 4432 or tcp port 4430 or tcp port 8081'
-options[:watch_file] = "/var/log/puppetlabs/console-services/nginx/access.log"
+options[:watch_file] = "/var/log/puppetlabs/nginx/access.log"
 options[:watch_regex] = / 504 /
 options[:exit_wait] = options
 
