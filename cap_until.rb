@@ -11,11 +11,11 @@ end
 
 options = {}
 options[:interface] = 'eth0'
-options[:prefix] = 'console_traffic_'
+options[:prefix] = '/tmp/console_traffic_'
 options[:rotate] = '300'
 options[:count] = 4
 options[:filter] = 'tcp port 4432 or tcp port 4430'
-options[:watch_file] = "test.log"
+options[:watch_file] = "/var/log/puppetlabs/console-services/nginx/access.log"
 options[:watch_regex] = / 504 /
 options[:exit_wait] = options
 
@@ -52,7 +52,7 @@ at_exit do
 end
 
 # Wait to kill tcpdump and exit until at least a full rotation has passed
-def delayed_exit delay=500
+def delayed_exit delay=300
   sleep delay
   quit_all
 end
