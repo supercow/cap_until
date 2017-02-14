@@ -35,7 +35,7 @@ end
 scan_delay = 1
 
 @tcpdump = Process.spawn(
-  'tcpdump' , '-i', options[:interface], '-w', "#{options[:prefix]}%m%d%H%M.pcap", '-G', "#{options[:rotate]}", options[:filter]
+  'tcpdump', '-z', 'gzip', '-i', options[:interface], '-w', "#{options[:prefix]}%m%d%H%M.pcap", '-G', "#{options[:rotate]}", options[:filter]
 )
 Process.detach @tcpdump
 
