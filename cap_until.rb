@@ -41,21 +41,20 @@ Process.detach @tcpdump
 sleep 1 #wait for tcpdump to start
 log "Started packet capture with pid #{@tcpdump}"
 
-at_exit do
-  quit_all
-end
-
-def quit_all exception=nil
-  at_exit {}
+def quit_all retval=0, exception=nil
   Process.kill "SIGKILL", @tcpdump
   raise exception if exception != nil
-  exit 0
+  exit retval
+end
+
+at_exit do
+  quit_all 1
 end
 
 # Wait to kill tcpdump and exit until at least a full rotation has passed
 def delayed_exit delay=500
   sleep delay
-  exit 0
+  quit_all
 end
 
 begin
@@ -74,7 +73,7 @@ begin
     end
   end
 rescue Exception => e
-  quit_all e
+  quit_all 1, e
   raise e
 end
 
