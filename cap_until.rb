@@ -14,20 +14,21 @@ options[:interface] = 'eth0'
 options[:prefix] = '/tmp/console_traffic_'
 options[:rotate] = '300'
 options[:count] = 4
-options[:filter] = 'tcp port 4432 or tcp port 4430'
+options[:filter] = 'tcp port 4432 or tcp port 4430 or tcp port 8081'
 options[:watch_file] = "/var/log/puppetlabs/console-services/nginx/access.log"
 options[:watch_regex] = / 504 /
 options[:exit_wait] = options
 
 OptionParser.new do |o|
-  o.on('-i INTERFACE_DEVICE') { |r| options[:interface] = r }
-  o.on('-l LOG_PREFIX') { |r| options[:prefix] = r }
-  o.on('-t ROTATION_FREQUENCY', Integer) { |r| options[:rotate] = r }
-  o.on('-c NUM_LOGS', Integer) { |r| options[:count] = r }
-  o.on('-f CAPTURE_FILTER') { |r| options[:filter] = r }
-  o.on('-r LOG_FILE') { |r| options[:watch_file] = r }
-  o.on('-x FILTER_REGEX') { |r| options[:watch_regex] = r }
-  o.on('-h') {puts o; exit 0}
+  o.banner = "Runs a packet capture until a maching log entry is found\n\nUsage: #{$PROGRAM_NAME} [options]\nAll arguments are optional.\n\nOptions:"
+  o.on("-i INTERFACE_DEVICE (default: #{options[:interface]}") { |r| options[:interface] = r }
+  o.on("-l LOG_PREFIX (default: #{options[:prefix]})") { |r| options[:prefix] = r }
+  o.on("-t ROTATION_FREQUENCY (default: #{options[:rotate]})", Integer) { |r| options[:rotate] = r }
+  o.on("-c NUM_LOGS (default: #{options[:count]}", Integer) { |r| options[:count] = r }
+  o.on("-f CAPTURE_FILTER (default: #{options[:filter]})") { |r| options[:filter] = r }
+  o.on("-r LOG_FILE (default: #{options[:watch_file]})") { |r| options[:watch_file] = r }
+  o.on("-x FILTER_REGEX (default: #{options[:watch_regex].inspect})") { |r| options[:watch_regex] = Regexp.new r }
+  o.on("-h","--help") {puts o; exit 0}
   o.parse!
 end
 
@@ -42,17 +43,22 @@ sleep 1 #wait for tcpdump to start
 log "Started packet capture with pid #{@tcpdump}"
 
 def quit_all retval=0, exception=nil
-  Process.kill "SIGKILL", @tcpdump
+  begin
+    Process.kill "SIGKILL", @tcpdump
+    log "Exiting."
+  rescue Errno::ESRCH
+  end
   raise exception if exception != nil
   exit retval
 end
 
 at_exit do
-  quit_all 1
+  quit_all 1 if !($!.is_a?(SystemExit))
 end
 
 # Wait to kill tcpdump and exit until at least a full rotation has passed
 def delayed_exit delay=300
+  log "Exiting in #{delay} seconds"
   sleep delay
   quit_all
 end
@@ -67,7 +73,7 @@ begin
       select([file])
       line = file.gets
       if line =~ options[:watch_regex]
-        log "Found matching line: #{line}"
+        log "Matched line: #{line}"
         checking = false
       end
     end
