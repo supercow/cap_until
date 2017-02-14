@@ -11,7 +11,7 @@ end
 
 options = {}
 options[:interface] = 'eth0'
-options[:prefix] = '/tmp/console_traffic_'
+options[:prefix] = 'console_traffic_'
 options[:rotate] = '300'
 options[:count] = 4
 options[:filter] = 'tcp port 4432 or tcp port 4430 or tcp port 8081'
