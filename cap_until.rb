@@ -2,6 +2,10 @@ if Process.uid != 0
   puts "Must be run as root."
 end
 
+def log msg=""
+  puts "[#{Time.now}] #{msg}"
+end
+
 #device ||= 'eth0'
 device ||= 'en0'
 prefix ||= 'console_traffic'
@@ -9,6 +13,7 @@ rotate ||= '300'
 filter ||= 'tcp port 4432 or tcp port 4430'
 watch_file ||= "test.log"
 watch_regex ||= / 504 /
+scan_delay = 1
 
 @tcpdump = fork do
   system('tcpdump', '-i', device, '-w' "#{prefix}%m%d%H%M.pcap", '-G', rotate, filter)
@@ -34,20 +39,22 @@ def delayed_exit delay=5
 end
 
 begin
-  checking = true
-  while checking do
-    File.foreach watch_file do |line|
+  File.open(watch_file) do |file|
+    file.seek(0,IO::SEEK_END)
+    checking = true
+    while checking do
+      sleep scan_delay
+      select([file])
+      line = file.gets
       if line =~ watch_regex
+        log "Found matching line: #{line}"
         checking = false
-        match = line
       end
     end
-    sleep 5
   end
 rescue Exception => e
   quit_all e
   raise e
 end
 
-log "Found matching line: #{line}"
 delayed_exit
