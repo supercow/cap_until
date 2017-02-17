@@ -41,7 +41,7 @@ Process.detach @tcpdump
 
 def quit_all retval=0, exception=nil
   begin
-    Process.kill "SIGKILL", @tcpdump
+    Process.kill "SIGTERM", @tcpdump
     log "Exiting."
   rescue Errno::ESRCH
   end
